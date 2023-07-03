@@ -2,6 +2,7 @@ package lastpencil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
@@ -40,7 +41,7 @@ public class Main {
                 while (pencils > 0) {
                     gameRound(scanner);
                 }
-                System.out.printf("%s won!", getCurrentPlayer());
+                System.out.printf("%s won!\n", getCurrentPlayer());
                 scanner.close();
                 break;
             } catch (IllegalArgumentException iae) {
@@ -56,44 +57,44 @@ public class Main {
     public static void gameRound(Scanner scanner) {
         printPencils();
         int possibleValues = Integer.min(3, pencils);
-        System.out.printf("%s's turn!\n", getCurrentPlayer());
-        while (true) {
-            try {
-                int pencilsRemoved = Integer.parseInt(scanner.nextLine().trim());
-                if (0 >= pencilsRemoved || pencilsRemoved > 3) {
-                    throw new IllegalArgumentException();
-                } else if (pencilsRemoved > possibleValues) {
-                    System.out.println("Too many pencils were taken");
-                } else {
-                    pencils -= pencilsRemoved;
-                    isPlayer1Turn = !isPlayer1Turn;
-                    return;
+        System.out.printf("%s's turn%s\n", getCurrentPlayer(), isPlayer1Turn ? "!" : ":");
+        int pencilsRemoved;
+        if (!isPlayer1Turn) {
+            pencilsRemoved = botMove(possibleValues);
+            System.out.println(pencilsRemoved);
+        } else {
+            while (true) {
+                try {
+                    pencilsRemoved = Integer.parseInt(scanner.nextLine().trim());
+                    if (pencilsRemoved < 1 || 3 < pencilsRemoved) {
+                        throw new IllegalArgumentException();
+                    } else if (pencilsRemoved > possibleValues) {
+                        System.out.println("Too many pencils were taken");
+                    } else {
+                        break;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Possible values: '1', '2' or '3'");
                 }
-            } catch (Exception e) {
-                System.out.println(getPossibleValuesString(possibleValues));
             }
+        }
+        pencils -= pencilsRemoved;
+        isPlayer1Turn = !isPlayer1Turn;
+    }
+
+    private static int botMove(int possibleValues) {
+        if (pencils % 4 == 0) {
+            return 3;
+        } else if ((pencils + 1) % 4 == 0) {
+            return 2;
+        } else if ((pencils + 2) % 4 == 0) {
+            return 1;
+        } else {
+            return new Random().nextInt(possibleValues) + 1;
         }
     }
 
     private static void printPencils() {
         System.out.println("|".repeat(pencils));
-    }
-
-    private static String getPossibleValuesString(int possibleValues) {
-        StringBuilder possibleValueStr = new StringBuilder("Possible values: ");
-        if (possibleValues == 1) {
-            possibleValueStr.append("'1'");
-        } else {
-            for (int i = 1; i < possibleValues; i++) {
-                possibleValueStr.append(String.format("'%s'", i));
-                if (i < possibleValues - 1) {
-                    possibleValueStr.append(", ");
-                } else {
-                    possibleValueStr.append(" ");
-                }
-            }
-            possibleValueStr.append(String.format("or '%s'", possibleValues));
-        }
-        return possibleValueStr.toString();
     }
 }
